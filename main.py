@@ -102,7 +102,7 @@ def analyze_emotion():
 @app.route('/update_keywords', methods=['POST'])
 def update_keywords():
     data = request.get_json()
-    if not all(key in data for key in ['new_negkeywords', 'new_poskeywords']):
+    if not all(key in data for key in ['new_negkeywords', 'new_poskeywords', 'new_negstatements', 'new_posstatements']):
         return jsonify({"Error: Missing one or more required fields. "}),
 
     kw.update_negkeywords(data['new_negkeywords'])
