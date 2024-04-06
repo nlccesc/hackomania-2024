@@ -1,3 +1,4 @@
+import pprint
 import re
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -49,10 +50,12 @@ def analyze_text_corpus():
         "positive": analyzed_posstatements
     }
 
+
 sentiment_scores_statements = analyze_text_corpus()
 sentiment_scores_keywords = analyze_all_keywords()
 
+pp = pprint.PrettyPrinter(indent=4)
 print("Sentiment scores for statements:")
-print(sentiment_scores_statements)
+pp.pprint(sentiment_scores_statements)
 print("\nSentiment scores for keywords:")
-print(sentiment_scores_keywords)
+pp.pprint(sentiment_scores_keywords)
