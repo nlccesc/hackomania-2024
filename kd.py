@@ -45,18 +45,28 @@ def update_keywords(new_keywords):
             return {"error": "failure to update keyword list"}
     return {"message": "failure to update."}
 
-def perform_keyword_detection_with_embeddings(text, keywords):
-    text = preprocess_text(text)
-    keywords = [preprocess_text(keyword) for keyword in keywords]
-    doc = nlp(text)
-    keyword_docs = [nlp(keyword) for keyword in keywords]
-    text_vector = np.mean([word.vector for word in doc if word.has_vector], axis=0)
-    keyword_vectors = np.array([np.mean([word.vector for word in keyword_doc if word.has_vector], axis=0) for keyword_doc in keyword_docs])
+def calculate_threshold(text, base_threshold=0.5, length_penalty=0.001):
+    return base_threshold - length_penalty * len(text)
 
-    if np.any(text_vector) and np.any(keyword_vectors):
-        similarities = cosine_similarity([text_vector], keyword_vectors)
-        matches = [keywords[i] for i in np.where(similarities>0.5[1])]
-        return matches
+def perform_keyword_detection_with_embeddings(text, keywords, threshold=None):
+    if threshold is None:
+        threshold = calculate_threshold(text)
+
+    try:
+        text = preprocess_text(text)
+        keywords = [preprocess_text(keyword) for keyword in keywords]
+        doc = nlp(text)
+        keyword_docs = nlp(' '.join(keywords))
+        
+        text_vector = np.mean([word.vector for word in doc if word.has_vector], axis=0)
+        keyword_vectors = np.array([np.mean([word.vector for word in keyword_doc if word.has_vector], axis=0) for keyword_doc in keyword_docs])
+
+        if np.any(text_vector) and np.any(keyword_vectors):
+            similarities = cosine_similarity([text_vector], keyword_vectors)
+            matches = [keywords[i] for i in np.where(similarities > threshold)[1]]
+            return matches
+    except Exception as e:
+        print(f"Error: {e}")
     return []
 
 def detect_keywords(text, keywords):
