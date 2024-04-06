@@ -1,13 +1,13 @@
+import kw
+import tc
 import kd
 import ed
 import sa
 import ner
 from flask import Flask, request, jsonify, render_template
 from sa import analyze_text_corpus
-
 from kw import poskeywords, negkeywords
 from tc import posstatements, negstatements
-
 
 app = Flask(__name__, template_folder='.')
 
@@ -29,35 +29,30 @@ negkeywords = [
     "awful", "appalling", "bad", "creep", "lost"
 ]
 
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-
 @app.route('/detect_keywords', methods=['POST'])
 def detect_keywords():
     data = request.get_json()
     text = data.get('text')
     keywords = data.get('keywords')
+    return jsonify({"message": "Keywords detected"}), 200
 
 @app.route('/analyze_ner', methods=['POST'])
 def analyze_ner_route():
     data = request.get_json()
     if 'text' not in data:
-        return jsonify({"error: Missing 'text' field in request body"}), 400
+        return jsonify({"error": "Missing 'text' field in request body"}), 400
 
     text = data['text']
     result = ner.analyze_ner(text)
-    return jsonify(text)
+    return jsonify(result), 200
 
 @app.route('/analyze_sentiment', methods=['POST'])
 def analyze_sentiment():
     data = request.get_json()
     if 'text' not in data:
-        return jsonify ({"error: Missing 'text' field in request body "}), 400
+        return jsonify ({"error": "Missing 'text' field in request body "}), 400
     text = data['text']
-    return jsonify(sa.analyze_sentiment(text))
+    return jsonify(sa.analyze_sentiment(text)), 200
 
 @app.route('/analyze_corpus_sentiments', methods=['POST'])
 def analyze_corpus_sentiments():
@@ -94,30 +89,28 @@ def analyze_corpus_sentiments():
 def analyze_corpus_route():
     combined_statements = {**sa.negstatements, **sa.posstatements}
     sentiment_scores = sa.analyze_corpus(combined_statements)
-    return jsonify(sentiment_scores)
+    return jsonify(sentiment_scores), 200
 
 @app.route('/analyze_emotion', methods=['POST'])
 def analyze_emotion():
     data = request.get_json()
     if 'text' not in data:
-        return jsonify({"error: Missing 'text' field in request body "}), 400
+        return jsonify({"error": "Missing 'text' field in request body "}), 400
     text = data['text']
-    return jsonify(ed.analyze_sentiment(text))
+    return jsonify(ed.analyze_sentiment(text)), 200
 
-@app.route('/update_keywords', method=['POST'])
+@app.route('/update_keywords', methods=['POST'])
 def update_keywords():
     data = request.get_json()
-    if not all(key in data for key in ['new_negkeywords', 'new_poskeywords', 'new_negstatements', 'new_posstatements']):
-        return jsonify({"error. Missing one or more required fields"}), 400
+    if not all(key in data for key in ['new_negkeywords', 'new_poskeywords']):
+        return jsonify({"Error: Missing one or more required fields. "}),
+
+    kw.update_negkeywords(data['new_negkeywords'])
+    kw.update_poskeywords(data['new_poskeywords'])
+    tc.update_negstatements(data['new_negstatements'])
+    tc.update_posstatements(data['new_posstatements'])
+
+    return jsonify({"message": "keywords updated successfully"}), 200
     
-    sa.negkeywords.extend(data['new_negkeywords'])
-    sa.poskeywords.extend(data['new_poskeywords'])
-    sa.negstatements.extend(data['new_negstatements'])
-    sa.posstatements.extend(data['new_posstatements'])
-
-    return jsonify(["message: keywords and statements updated successfully"])
-
 if __name__ == '__main__':
     app.run(debug=True)
-
-
