@@ -39,6 +39,9 @@ def analyze_emotion():
     with torch.no_grad():
         logits = model(**inputs).logits
 
+    max_val = torch.max(logits)
+    logits -= max_val
+
     probabilities = torch.nn.functional.softmax(logits, dim=1)
 
     emotion = model.config.id2label[probabilities.argmax().item()]
