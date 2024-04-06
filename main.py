@@ -5,7 +5,29 @@ import ner
 from flask import Flask, request, jsonify, render_template
 from sa import analyze_text_corpus
 
+from kw import poskeywords, negkeywords
+from tc import posstatements, negstatements
+
+
 app = Flask(__name__, template_folder='.')
+
+poskeywords = [
+    "happy", "classy", "affectionate", "admirable",
+    "clever", "enthusiastic", "nice", "friendly",
+    "lovely", "lively", "intelligent", "joyful",
+    "optimistic", "satisfied", "sunny", "vibrant",
+    "wonderful", "zealous", "zesty", "zippy",
+    "zestful", "zest", "encourage", "Active",
+    "motivate", "Activate", "energize", "amuse",
+    "ecstatic", "polite", "generous", "best", "good",
+    "breathtaking", "positive", "disciplined", "reliable",
+    "Glad", "ideal", "Peaceful"
+]
+
+negkeywords = [
+    "abysmal", "adverse", "alarming", "atrocious",
+    "awful", "appalling", "bad", "creep", "lost"
+]
 
 
 @app.route('/')
@@ -39,8 +61,34 @@ def analyze_sentiment():
 
 @app.route('/analyze_corpus_sentiments', methods=['POST'])
 def analyze_corpus_sentiments():
-    sentiment_analysis_results = analyze_text_corpus()
-    return jsonify(sentiment_analysis_results)
+
+    data = request.get_json()
+    text_corpus = data.get('text_corpus', '')
+
+    positive_sentiment_count = 0
+    negative_sentiment_count = 0
+
+    for word in text_corpus.split():
+        if word.lower() in poskeywords:
+            positive_sentiment_count += 1
+        elif word.lower() in negkeywords:
+            negative_sentiment_count += 1
+
+
+    if positive_sentiment_count > negative_sentiment_count:
+        overall_sentiment = "Positive"
+    elif negative_sentiment_count > positive_sentiment_count:
+        overall_sentiment = "Negative"
+    else:
+        overall_sentiment = "Neutral"
+
+    sentiment_analysis_results = {
+        "positive_sentiment_count": positive_sentiment_count,
+        "negative_sentiment_count": negative_sentiment_count,
+        "overall_sentiment": overall_sentiment
+    }
+
+    return jsonify(sentiment_analysis_results), 200
 
 @app.route('/analyze_corpus', methods=['POST'])
 def analyze_corpus_route():
