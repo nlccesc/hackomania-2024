@@ -7,6 +7,12 @@ from sa import analyze_text_corpus
 
 app = Flask(__name__, template_folder='.')
 
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
 @app.route('/detect_keywords', methods=['POST'])
 def detect_keywords():
     data = request.get_json()
