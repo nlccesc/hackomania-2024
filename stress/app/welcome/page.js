@@ -1,13 +1,7 @@
-// "use client"
+"use client"
 import React, { useEffect } from "react";
 import Nav from "../Components/Nav";
 import StressMeter from "../Components/StressMeter";
-// import { connectToDatabase } from "../api/timescale/connect/route";
-// import { handleAnalyse } from "@/utils/methods";
-
-
-
-
 
 const Welcome = () => {
 
@@ -20,7 +14,7 @@ const Welcome = () => {
       })
     })
 
-    const data = response.json();
+    const data = await response.json();
 
     console.log(data)
   }

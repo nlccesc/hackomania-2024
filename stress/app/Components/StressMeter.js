@@ -109,7 +109,7 @@ const StressMeter = () => {
 
   return (
     <div className="w-full border border-solid my-10 p-20 rounded-3xl">
-      <p>{JSON.stringify(data)}</p>
+      {/* <p>{JSON.stringify(data)}</p> */}
       <Notification value={meterValue}/>
       <button
         onClick={() => setMeter(1)}
